@@ -3,6 +3,75 @@
 
 {% block content %}
 
-Hello search
+<div class="container">
+	<h1>{% trans "Search Results"%}</h1>
+	<h2 class="lead">
+		<strong class="text-danger">{{num_results}}</strong> {% blocktrans count counter=num_results %}page{%plural%}pages{%endblocktrans%} {%trans "were found when searching for"%} <strong class="text-danger">{{q_str}}</strong></h2>							
+	<p>Displaying results {{from}} to {{to}}</p>
 
+	<form class="search-options form-inline">
+	{% if num_results >  r %}
+	  <div class="form-group">
+		<ul class="pagination">
+		  {% for p in res_pages %}
+		  <li {% if p == active_p %} class="active"{%endif%}><a href="{% url "search:index"%}?q={{q_str}}&s={% widthratio p 1 r %}&r={{r}}">{{p|add_one}}</a></li>
+		  {% endfor %}
+		</ul>
+	  </div>
+	  {% endif %}
+	  <div class="form-group">
+		<select id="search-result-length" class="selectpicker" title="{% trans "Results page size..."%}">
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="20">20</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+		</select>
+	  </div>
+	</form>
+	
+    <section class="col-lg-12">
+	{% for ph in results %}
+		<article class="search-result row">
+			<div class="col-lg-2 search-thumbnail">
+	{%comment%}
+		api-oddity compensation ahead: 
+			each page hit has *all* the collections that a doc belongs to
+			The user will be able to access *some* of these collections
+			We only really want to take the user to the page with the text 
+			and don't particularly care about the collection it is in as 
+			long as our user can access it.
+
+			so we intersect the pageHit collections with the users collections 
+			and take the first to garuntee a resolvable url.
+
+			A better thing would be a unique document ref that would allow us 
+			to access the document without needing a collection id
+	{%endcomment%}
+
+				<a href="{% url "edit:correct" ph.collectionIds.collectionId|intersect_and_first:user_cols ph.docId ph.pageNr %}"><img src="{{ ph.pageUrl|thumb_from_page_url }}" alt="Page Thumbnail"/></a>
+			</div>
+			<div class="col-lg-10 excerpt">
+				<h3><a href="{% url "edit:correct" ph.collectionIds.collectionId|intersect_and_first:user_cols ph.docId ph.pageNr %}" title="{{ph.docTitle}}">{{ ph.docTitle }}: {% trans 'page '%}{{ ph.pageNr }}</a></h3>
+				<div class="search-highlights">
+				{% for highlight in ph.highlights|slice:"0:2" %}
+					<div class="search-highlight">{{highlight|safe}}</div>
+				{% endfor %}
+				{%if ph.highlights|length > 2 %}	
+					<span class="plus" data-toggle="collapse" data-target="#search-highlights-{{ph.docId}}-{{ph.pageNr}}"><i class="glyphicon glyphicon-plus"></i></span>
+					<div class="search-highlights collapse" id="search-highlights-{{ph.docId}}-{{ph.pageNr}}">
+					{% for highlight in ph.highlights|slice:"3:" %}
+						<div class="search-highlight">{{highlight|safe}}</div>
+					{% endfor %}
+					</div>
+					<span class="minus" data-toggle="collapse" data-target="#search-highlights-{{ph.docId}}-{{ph.pageNr}}"><i class="glyphicon glyphicon-minus"></i></span>
+
+				{%endif%}
+				</div>
+			</div>
+			<span class="clearfix borda"></span>
+		</article>
+	{% endfor %}
+    </section>
+</div>
 {% endblock %}
