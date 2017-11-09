@@ -14,7 +14,9 @@ from apps.utils.views import *
 @login_required
 def index(request):
 
-    t = request.user.tsdata.t
+    t = get_ts_session(request)
+    if isinstance(t,HttpResponse) :
+        return error_view(request,t)
 
     q = request.GET.get('q')
     r = request.GET.get('r') if 'r' in request.GET else 10

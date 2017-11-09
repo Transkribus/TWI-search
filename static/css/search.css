@@ -1,6 +1,3 @@
-.search-form {
-	margin-top: 8px;
-}
 .search-result{
 	min-height: 140px;
  	display: flex;                /* [1] */ 
