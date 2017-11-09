@@ -5,7 +5,7 @@ import settings
 import apps.search.settings
 
 from django.contrib.auth.decorators import login_required
-from apps.utils.utils import crop, t_metadata, t_log
+from apps.utils.utils import get_ts_session, crop, t_metadata, t_log
 from apps.utils.services import *
 from apps.utils.views import *
 
